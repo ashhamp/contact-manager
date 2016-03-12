@@ -1,25 +1,47 @@
 require 'sinatra'
 require 'sinatra/reloader'
+require 'sinatra/activerecord'
+require 'pry'
 
 require_relative 'models/contact'
 also_reload 'models/contact'
 
-before do
-  contact_attributes = [
-    { first_name: 'Eric', last_name: 'Kelly', phone_number: '1234567890' },
-    { first_name: 'Adam', last_name: 'Sheehan', phone_number: '1234567890' },
-    { first_name: 'Dan', last_name: 'Pickett', phone_number: '1234567890' },
-    { first_name: 'Evan', last_name: 'Charles', phone_number: '1234567890' },
-    { first_name: 'Faizaan', last_name: 'Shamsi', phone_number: '1234567890' },
-    { first_name: 'Helen', last_name: 'Hood', phone_number: '1234567890' },
-    { first_name: 'Corinne', last_name: 'Babel', phone_number: '1234567890' }
-  ]
+get '/' do
+  @page = params['page'].to_i
+  @total_pages = (Contact.count.to_f / 10).ceil
 
-  @contacts = contact_attributes.map do |attr|
-    Contact.new(attr)
+  if @page < 2
+    @page = 1
+  elsif @page > @total_pages
+    @page = @total_pages
   end
+
+  if @page == 1
+    @offset = 0
+  else
+    @offset = (@page - 1) * 10
+  end
+
+  @contacts = Contact.limit(10).offset("#{@offset}")
+
+  erb :index
 end
 
-get '/' do
-  erb :index
+get '/contacts/:id' do
+  @contact = Contact.find(params['id'])
+  erb :show
+end
+
+get '/add' do
+  erb :add
+end
+
+post '/add' do
+  @total_pages = (Contact.count.to_f / 10).ceil
+  if params['first_name'].strip.empty? || params['last_name'].strip.empty? || params['phone_number'].strip.empty?
+    erb :add
+  else
+    Contact.create(params)
+    redirect "/?page=#{@total_pages}"
+  end
 end

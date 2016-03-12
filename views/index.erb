@@ -2,6 +2,17 @@
 
 <ul>
   <% @contacts.each do |contact| %>
-    <li><%= contact.name %> - <%= contact.phone_number %></li>
+    <li><a href="/contacts/<%= contact.id %>"> <%= contact.name %></a> - <%= contact.phone_number %></li>
   <% end %>
 </ul>
+
+<div class="pagination">
+  <a href="/"> <button type="button" name="button">first</button></a>
+  <a href="/?page=<%= @page - 1 %>"><button type="button" name="button">previous</button></a>
+
+  <a href="/?page=<%= @page + 1 %>"><button type="button" name="button">next</button></a>
+
+  <a href="/?page=<%= @total_pages %>"><button type="button" name="button">last</button></a>
+
+  <a href="/add"><button type="button" name="add">add contact</button></a>
+</div>
